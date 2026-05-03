@@ -149,8 +149,9 @@ const buildRequests = (validBidRequests = [], bidderRequest = {}) => {
   validBidRequests.forEach((bid) => {
     const partner = getPartnerName(bid);
     const region = normalizeRegion(bid.params?.region);
+    const { seat, token } = bid.params || {};
 
-    const key = `${partner}|${region}`;
+    const key = `${partner}|${region}|${seat}|${token}`;
 
     (bidsByKey[key] = bidsByKey[key] || []).push(bid);
   });
@@ -207,7 +208,7 @@ const getUserSyncs = (syncOptions, serverResponses, gdprConsent, uspConsent, gpp
     return [];
   }
 
-  const res = serverResponses.find(r => r.area && r.pid);
+  const res = serverResponses.find(r => r.partner && r.area && r.pid);
   if (!res) return [];
 
   const { area, pid } = res;
