@@ -96,10 +96,7 @@ const resolveEndpoint = ({ partner, region, seat, token }) => {
     partnerEndpoints?.[DEFAULT_REGION];
 
   if (partnerEndpoint) {
-    const params = new URLSearchParams({
-      seat,
-      token
-    });
+    const params = new URLSearchParams({ seat, token });
 
     return `${partnerEndpoint}?${params.toString()}`;
   }
@@ -110,11 +107,7 @@ const resolveEndpoint = ({ partner, region, seat, token }) => {
     BASE_URL_TEMPLATES[providerKey] ||
     BASE_URL_TEMPLATES[`${DEFAULT_PROVIDER}-us_east`];
 
-  const params = new URLSearchParams({
-    partnerName: partner,
-    seat,
-    token
-  });
+  const params = new URLSearchParams({ partnerName: partner, seat, token });
 
   return `${base}?${params.toString()}`;
 };
@@ -160,12 +153,7 @@ const buildRequests = (validBidRequests = [], bidderRequest = {}) => {
     const partner = getPartnerName(bids[0]);
     const region = normalizeRegion(bids[0].params.region);
     const { seat, token } = bids[0].params || {};
-    const endpoint = resolveEndpoint({
-      partner,
-      region,
-      seat,
-      token
-    });
+    const endpoint = resolveEndpoint({ partner, region, seat, token });
 
     const request = buildRequestsBase({
       adUrl: endpoint,
@@ -187,7 +175,7 @@ const baseInterpretResponse = interpretResponseBuilder({
   }
 });
 
-const interpretResponse = (serverResponse, request) => {
+const interpretResponse = (serverResponse, request = {}) => {
   const bids = request.validBidRequests || [];
   if (!bids.length) {
     return baseInterpretResponse(serverResponse);
@@ -204,12 +192,11 @@ const interpretResponse = (serverResponse, request) => {
 };
 
 const getUserSyncs = (syncOptions, serverResponses, gdprConsent, uspConsent, gppConsent) => {
-  if (!serverResponses?.length) {
-    return [];
-  }
+  let res = serverResponses?.find?.(r => r.partner && r.area && r.pid);
 
-  const res = serverResponses.find(r => r.partner && r.area && r.pid);
-  if (!res) return [];
+  if (!res) {
+    res = ALIASES[DEFAULT_PROVIDER];
+  }
 
   const { area, pid } = res;
 
